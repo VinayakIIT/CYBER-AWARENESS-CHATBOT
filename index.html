@@ -141,7 +141,7 @@ async function sendMessage(message) {
     chatArea.scrollTop = chatArea.scrollHeight;
 
     try {
-        const res = await fetch(`${BACKEND_URL}/ask`, {
+        const res = await fetch(`${"https://cyber-awareness-chatbot-4.onrender.com"}/ask`, {
             method:'POST',
             headers:{'Content-Type':'application/json'},
             body: JSON.stringify({message})
