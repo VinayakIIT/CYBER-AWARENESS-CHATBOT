@@ -3,16 +3,16 @@ from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 
-# Load environment
+# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# Load API Key
+# OpenAI key
 api_key = os.getenv("OPENAI_API_KEY")
 
-# OpenAI client (new SDK)
+# OpenAI client
 from openai import OpenAI
 client = OpenAI(api_key=api_key)
 
@@ -36,10 +36,10 @@ def ask():
         print("❌ Error:", e)
         return jsonify({"reply": "⚠️ Error processing your request."})
 
-# Optional root route
 @app.route("/", methods=["GET"])
 def home():
     return "CyberGuard backend is running!"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
