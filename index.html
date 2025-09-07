@@ -142,7 +142,7 @@ async function getResponse(message) {
     try {
         const baseURL = window.location.hostname.includes("localhost") 
             ? "http://127.0.0.1:5000" 
-            : "https://YOUR-RENDER-APP.onrender.com"; // <-- Replace with your Render URL
+            : "https://cyber-awareness-chatbot-3.onrender.com"
         const res = await fetch(`${baseURL}/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
