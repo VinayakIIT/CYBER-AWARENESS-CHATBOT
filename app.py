@@ -1,40 +1,56 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
-
+# Initialize Flask app
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Allow cross-origin requests from your frontend
 
-# OpenAI key
-api_key = os.getenv("OPENAI_API_KEY")
-
-# OpenAI client
+# Load OpenAI client securely from environment variable
 from openai import OpenAI
-client = OpenAI(api_key=api_key)
 
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("❌ OPENAI_API_KEY not found in environment variables!")
+
+client = OpenAI(api_key=api_key)
+print("✅ OpenAI client initialized successfully")
+
+# Route to handle chat requests
 @app.route("/ask", methods=["POST"])
 def ask():
-    data = request.get_json()
-    user_message = data.get("message", "")
+    data = request.json
+    if not data or "message" not in data:
+        return jsonify({"error": "No message provided"}), 400
 
-    if not user_message:
-        return jsonify({"reply": "Please send a message."})
+    user_message = data["message"]
 
     try:
+        # Using OpenAI GPT-4 response (adjust model as needed)
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": user_message}],
-            max_tokens=200
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are CyberGuard, a helpful cybersecurity assistant."},
+                {"role": "user", "content": user_message}
+            ],
+            temperature=0.7,
+            max_tokens=250
         )
-        reply = response.choices[0].message.content
-        return jsonify({"reply": reply})
+        bot_reply = response.choices[0].message.content
+        return jsonify({"reply": bot_reply})
     except Exception as e:
         print("❌ Error:", e)
-        return jsonify({"reply": "⚠️ Error processing your request."})
+        return jsonify({"error": "Error processing your request."}), 500
+
+# Health check endpoint
+@app.route("/", methods=["GET"])
+def home():
+    return "CyberGuard backend is running!", 200
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
 
 @app.route("/", methods=["GET"])
 def home():
