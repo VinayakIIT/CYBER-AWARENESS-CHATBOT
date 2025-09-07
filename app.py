@@ -1,61 +1,70 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
+from dotenv import load_dotenv
 
-# Initialize Flask app
+# Load environment variables
+env_path = os.path.join(os.path.dirname(__file__), ".env")
+load_dotenv(dotenv_path=env_path)
+
+# Flask app setup
 app = Flask(__name__)
-CORS(app)  # Allow cross-origin requests from your frontend
+CORS(app)  # Allow frontend requests
 
-# Load OpenAI client securely from environment variable
-from openai import OpenAI
-
+# OpenAI API key
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
-    raise ValueError("❌ OPENAI_API_KEY not found in environment variables!")
+    raise ValueError("❌ OPENAI_API_KEY not found in .env")
 
-client = OpenAI(api_key=api_key)
-print("✅ OpenAI client initialized successfully")
+# Initialize OpenAI client (new SDK)
+try:
+    from openai import OpenAI
+    client = OpenAI(api_key=api_key)
+    print("✅ OpenAI client initialized successfully (new SDK)")
+except ImportError:
+    import openai
+    openai.api_key = api_key
+    print("✅ OpenAI client initialized successfully (old SDK)")
 
-# Route to handle chat requests
+# --------------------
+# Routes
+# --------------------
+
+@app.route("/", methods=["GET"])
+def home_route():
+    return "CyberGuard Backend is live! ✅"
+
 @app.route("/ask", methods=["POST"])
-def ask():
-    data = request.json
-    if not data or "message" not in data:
-        return jsonify({"error": "No message provided"}), 400
-
-    user_message = data["message"]
-
+def ask_route():
     try:
-        # Using OpenAI GPT-4 response (adjust model as needed)
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are CyberGuard, a helpful cybersecurity assistant."},
-                {"role": "user", "content": user_message}
-            ],
-            temperature=0.7,
-            max_tokens=250
-        )
-        bot_reply = response.choices[0].message.content
-        return jsonify({"reply": bot_reply})
+        data = request.get_json()
+        question = data.get("question", "")
+        if not question:
+            return jsonify({"error": "No question provided"}), 400
+
+        # Use OpenAI to generate answer
+        response_text = ""
+        try:
+            # New SDK
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are CyberGuard, a cybersecurity assistant."},
+                    {"role": "user", "content": question}
+                ]
+            )
+            response_text = response.choices[0].message.content
+        except Exception as e:
+            response_text = f"❌ Error: {str(e)}"
+
+        return jsonify({"reply": response_text})
+
     except Exception as e:
-        print("❌ Error:", e)
-        return jsonify({"error": "Error processing your request."}), 500
+        return jsonify({"error": f"Server error: {str(e)}"}), 500
 
-# Health check endpoint
-@app.route("/", methods=["GET"])
-def home():
-    return "CyberGuard backend is running!", 200
-
+# --------------------
+# Run (for local dev)
+# --------------------
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
-
-
-@app.route("/", methods=["GET"])
-def home():
-    return "CyberGuard backend is running!"
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
 
