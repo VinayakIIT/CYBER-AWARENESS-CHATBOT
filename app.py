@@ -2,29 +2,24 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
+from openai import OpenAI
 
-# Load environment variables
-env_path = os.path.join(os.path.dirname(__file__), ".env")
-load_dotenv(dotenv_path=env_path)
+# Load environment variables from .env file
+load_dotenv()
 
 # Flask app setup
 app = Flask(__name__)
-CORS(app)  # Allow frontend requests
+# Enable CORS for all routes and origins
+CORS(app)
 
-# OpenAI API key
+# OpenAI API key from environment variables
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
-    raise ValueError("❌ OPENAI_API_KEY not found in .env")
+    raise ValueError("❌ OPENAI_API_KEY not found in .env file.")
 
-# Initialize OpenAI client (new SDK)
-try:
-    from openai import OpenAI
-    client = OpenAI(api_key=api_key)
-    print("✅ OpenAI client initialized successfully (new SDK)")
-except ImportError:
-    import openai
-    openai.api_key = api_key
-    print("✅ OpenAI client initialized successfully (old SDK)")
+# Initialize OpenAI client
+client = OpenAI(api_key=api_key)
+print("✅ OpenAI client initialized successfully.")
 
 # --------------------
 # Routes
@@ -37,34 +32,33 @@ def home_route():
 @app.route("/ask", methods=["POST"])
 def ask_route():
     try:
+        # Get JSON data from the request
         data = request.get_json()
-        question = data.get("question", "")
+        
+        # The frontend sends a key named "message"
+        question = data.get("message", "")
+        
         if not question:
-            return jsonify({"error": "No question provided"}), 400
+            return jsonify({"error": "No message provided"}), 400
 
-        # Use OpenAI to generate answer
-        response_text = ""
-        try:
-            # New SDK
-            response = client.chat.completions.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": "You are CyberGuard, a cybersecurity assistant."},
-                    {"role": "user", "content": question}
-                ]
-            )
-            response_text = response.choices[0].message.content
-        except Exception as e:
-            response_text = f"❌ Error: {str(e)}"
-
+        # Use OpenAI to generate an answer
+        response = client.chat.completions.create(
+            model="gpt-4o-mini", # Using a more cost-effective and faster model
+            messages=[
+                {"role": "system", "content": "You are CyberGuard, a helpful and concise cybersecurity assistant. Explain concepts simply."},
+                {"role": "user", "content": question}
+            ]
+        )
+        
+        response_text = response.choices[0].message.content
         return jsonify({"reply": response_text})
 
     except Exception as e:
-        return jsonify({"error": f"Server error: {str(e)}"}), 500
+        print(f"Server error: {e}")
+        return jsonify({"error": f"Server error: {e}"}), 500
 
 # --------------------
 # Run (for local dev)
 # --------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
-
