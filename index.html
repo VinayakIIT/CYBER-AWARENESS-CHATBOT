@@ -1,160 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CyberGuard: Interactive Cybersecurity Awareness</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-  <style>
-    body {
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-      min-height: 100vh;
-      font-family: 'Roboto', sans-serif;
-      overflow-x: hidden;
-      position: relative;
-      transition: background 0.5s;
-    }
-    body.light {
-      background: linear-gradient(135deg, #e0e0e0 0%, #c0c0c0 50%, #a0a0a0 100%);
-    }
-    .cyber-bg { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(255,255,255,0.05) 8px, rgba(255,255,255,0.05) 9px), repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(255,255,255,0.05) 8px, rgba(255,255,255,0.05) 9px); animation: gridShift 20s linear infinite; }
-    @keyframes gridShift { 0% { transform: translateX(0) translateY(0); } 100% { transform: translateX(-10px) translateY(-10px); } }
-    .chat-container { backdrop-filter: blur(20px); background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); transition: background 0.5s, border 0.5s; }
-    body.light .chat-container {
-      background: rgba(255, 255, 255, 0.3);
-      border: 1px solid rgba(0,0,0,0.1);
-    }
-    .message { animation: slideIn 0.6s ease-out; }
-    @keyframes slideIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
-    .bot-avatar { width: 40px; height: 40px; background: linear-gradient(45deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; }
-    .typing-dots span { animation: bounce 1.4s ease-in-out infinite; }
-    .typing-dots span:nth-child(2) { animation-delay: 0.16s; }
-    .typing-dots span:nth-child(3) { animation-delay: 0.32s; }
-    @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translate3d(0,0,0); } 40% { transform: translate3d(0, -10px, 0); } 60% { transform: translate3d(0, -5px, 0); } }
-    .quick-reply-btn { transition: all 0.3s ease; }
-    .quick-reply-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-    .awareness-meter { width: 100%; height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; overflow: hidden; }
-    .awareness-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00ccff); width: 0%; transition: width 1s ease; }
-    .glitch { animation: glitch 2s linear infinite; }
-    @keyframes glitch { 2%, 64% { transform: translate(2px); } 4%, 60% { transform: translate(-2px); } 62% { transform: translate(0); } }
-    /* Night toggle button */
-    #toggle-btn { position: fixed; top: 20px; right: 20px; background: #00ccff; color: #000; border: none; padding: 10px 20px; border-radius: 9999px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
-    #toggle-btn:hover { transform: scale(1.05); }
-    body.light #toggle-btn { background: #333; color: #fff; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberGuard: Interactive Cybersecurity Awareness</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  body {
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    min-height: 100vh;
+    font-family: 'Roboto', sans-serif;
+    overflow-x: hidden;
+    position: relative;
+    transition: background 0.5s;
+  }
+  body.night {
+    background: #121212;
+  }
+  .cyber-bg {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(255,255,255,0.05) 8px, rgba(255,255,255,0.05) 9px),
+                repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(255,255,255,0.05) 8px, rgba(255,255,255,0.05) 9px);
+    animation: gridShift 20s linear infinite;
+  }
+  @keyframes gridShift { 0% { transform: translateX(0) translateY(0); } 100% { transform: translateX(-10px) translateY(-10px); } }
+  .particle { position: absolute; width: 2px; height: 2px; background: rgba(0,255,255,0.8); border-radius: 50%; animation: float 10s linear infinite; }
+  @keyframes float { 0% { transform: translateY(100vh); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-100vh); opacity: 0; } }
+  .chat-container { backdrop-filter: blur(20px); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); transition: background 0.5s; }
+  .chat-container.night { background: rgba(255,255,255,0.05); }
+  .message { animation: slideIn 0.6s ease-out; }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+  .bot-avatar { width: 40px; height: 40px; background: linear-gradient(45deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; }
+  .typing-dots span { animation: bounce 1.4s ease-in-out infinite; }
+  .typing-dots span:nth-child(2) { animation-delay: 0.16s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.32s; }
+  @keyframes bounce { 0%,20%,50%,80%,100%{transform:translate3d(0,0,0);} 40%{transform:translate3d(0,-10px,0);} 60%{transform:translate3d(0,-5px,0);} }
+  .quick-reply-btn { transition: all 0.3s ease; }
+  .quick-reply-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+  .awareness-meter { width: 100%; height: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; overflow: hidden; }
+  .awareness-fill { height: 100%; background: linear-gradient(90deg, #00ff88, #00ccff); width: 0%; transition: width 1s ease; }
+  .glitch { animation: glitch 2s linear infinite; }
+  @keyframes glitch { 2%,64% { transform: translate(2px); } 4%,60% { transform: translate(-2px); } 62% { transform: translate(0); } }
+  .night-toggle { position: fixed; top: 20px; right: 20px; background: #0f0c29; color: #fff; padding: 10px 15px; border-radius: 10px; cursor: pointer; z-index: 50; }
+</style>
 </head>
 <body class="relative">
-  <button id="toggle-btn">Night Mode</button>
 
-  <div class="cyber-bg"></div>
+<div class="cyber-bg"></div>
+<div id="particles" class="absolute inset-0 pointer-events-none"></div>
 
-  <div class="flex flex-col items-center justify-center min-h-screen p-4 relative z-10">
-    <header class="text-center mb-8">
-      <h1 class="text-5xl font-bold text-white mb-4 font-orbitron glitch" style="font-family: 'Orbitron', monospace;">CYBERGUARD</h1>
-      <p class="text-xl text-cyan-300 opacity-90 mb-6">Interactive Cybersecurity Awareness Portal</p>
-      <div class="flex justify-center mb-4">
-        <img src="https://raw.githubusercontent.com/vinayakbhambri/CyberGuard-frontend/main/assets/avatar.png" class="rounded-full border-4 border-cyan-400 shadow-2xl animate-pulse w-20 h-20" />
-      </div>
-      <div class="awareness-meter"><div id="awareness-fill" class="awareness-fill"></div></div>
-      <p class="text-sm text-gray-300 mt-2">Awareness Level: Beginner</p>
-    </header>
+<div class="night-toggle" id="night-toggle">🌙 Night Mode</div>
 
-    <div class="chat-container p-8 w-full max-w-3xl">
-      <div class="flex mb-4">
-        <div class="bot-avatar"><span class="text-white text-xl font-bold">CG</span></div>
-        <div class="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-4 py-2 rounded-tl-none rounded-2xl relative">
-          <strong>CyberGuard:</strong> Welcome to your cybersecurity journey! Select a topic or ask me anything to boost your awareness.
-        </div>
-      </div>
-      <div id="chat-area" class="space-y-4 mb-6 max-h-80 overflow-y-auto"></div>
+<div class="flex flex-col items-center justify-center min-h-screen p-4 relative z-10">
+  <header class="text-center mb-8">
+    <h1 class="text-5xl font-bold text-white mb-4 font-orbitron glitch">CYBERGUARD</h1>
+    <p class="text-xl text-cyan-300 opacity-90 mb-6">Interactive Cybersecurity Awareness Portal</p>
+    <div class="flex justify-center mb-4">
+      <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/7b042011-0a23-4117-a3d6-90da3ff5ba56.png" alt="CyberGuard Logo" class="rounded-full border-4 border-cyan-400 shadow-2xl animate-pulse w-24 h-24" />
+    </div>
+    <div class="awareness-meter"><div id="awareness-fill" class="awareness-fill"></div></div>
+    <p class="text-sm text-gray-300 mt-2">Awareness Level: Beginner</p>
+  </header>
 
-      <div class="mb-4">
-        <h3 class="text-white text-lg mb-2 font-orbitron">Quick Topics:</h3>
-        <div class="flex flex-wrap gap-2">
-          <button class="quick-reply-btn bg-gray-700 text-white px-3 py-1 rounded-lg" data-reply="Passwords">Passwords</button>
-          <button class="quick-reply-btn bg-gray-700 text-white px-3 py-1 rounded-lg" data-reply="Phishing">Phishing</button>
-          <button class="quick-reply-btn bg-gray-700 text-white px-3 py-1 rounded-lg" data-reply="Malware">Malware</button>
-          <button class="quick-reply-btn bg-gray-700 text-white px-3 py-1 rounded-lg" data-reply="Social Engineering">Social Engineering</button>
-          <button class="quick-reply-btn bg-gray-700 text-white px-3 py-1 rounded-lg" data-reply="Data Privacy">Data Privacy</button>
-        </div>
-      </div>
-
-      <div class="flex">
-        <input id="user-input" type="text" placeholder="Ask about cybersecurity tips..." class="flex-grow p-4 rounded-l-xl border-0 bg-white bg-opacity-20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400">
-        <button id="send-btn" class="px-6 py-4 bg-gradient-to-r from-cyan-400 to-purple-600 text-white rounded-r-xl">Send</button>
+  <div class="chat-container p-8 w-full max-w-3xl" id="chat-container">
+    <div class="flex mb-4">
+      <div class="bot-avatar"><span class="text-white text-xl font-bold">CG</span></div>
+      <div class="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-4 py-2 rounded-tl-none rounded-2xl relative">
+        <strong>CyberGuard:</strong> Welcome! Select a topic or ask anything to boost your awareness.
       </div>
     </div>
+
+    <div id="chat-area" class="space-y-4 mb-6 max-h-80 overflow-y-auto"></div>
+
+    <div class="mb-4">
+      <h3 class="text-white text-lg mb-2 font-orbitron">Quick Topics:</h3>
+      <div class="flex flex-wrap gap-2">
+        <button class="quick-reply-btn bg-gray-700 text-white px-3 py-1 rounded-lg" data-reply="password">Passwords</button>
+        <button class="quick-reply-btn bg-gray-700 text-white px-3 py-1 rounded-lg" data-reply="phishing">Phishing</button>
+        <button class="quick-reply-btn bg-gray-700 text-white px-3 py-1 rounded-lg" data-reply="malware">Malware</button>
+        <button class="quick-reply-btn bg-gray-700 text-white px-3 py-1 rounded-lg" data-reply="social engineering">Social Engineering</button>
+        <button class="quick-reply-btn bg-gray-700 text-white px-3 py-1 rounded-lg" data-reply="data privacy">Data Privacy</button>
+      </div>
+    </div>
+
+    <div class="flex">
+      <input id="user-input" type="text" placeholder="Ask about cybersecurity tips..." class="flex-grow p-4 rounded-l-xl border-0 bg-white bg-opacity-20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+      <button id="send-btn" class="px-6 py-4 bg-gradient-to-r from-cyan-400 to-purple-600 text-white rounded-r-xl hover:from-cyan-500 hover:to-purple-700 transition transform hover:scale-105">Send</button>
+    </div>
   </div>
+</div>
 
-  <script>
-    const chatArea = document.getElementById('chat-area');
-    const userInput = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-btn');
-    const awarenessFill = document.getElementById('awareness-fill');
-    const toggleBtn = document.getElementById('toggle-btn');
+<script>
+const chatArea = document.getElementById('chat-area');
+const userInput = document.getElementById('user-input');
+const sendBtn = document.getElementById('send-btn');
+const awarenessFill = document.getElementById('awareness-fill');
+const particlesContainer = document.getElementById('particles');
+const nightToggle = document.getElementById('night-toggle');
+const chatContainer = document.getElementById('chat-container');
 
-    let awarenessLevel = 0;
-    const BACKEND_URL = "https://your-backend.onrender.com/ask"; // Replace with your Render URL
+let awarenessLevel = 0;
 
-    function addMessage(content, type='user', isBot=false){
-      const msgDiv = document.createElement('div');
-      msgDiv.className = 'flex message';
-      if(isBot){
-        msgDiv.innerHTML = `<div class="bot-avatar"><span class="text-white text-xl font-bold">CG</span></div>
-          <div class="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-4 py-2 rounded-tl-none rounded-2xl">${content}</div>`;
-      } else {
-        msgDiv.className += ' justify-end';
-        msgDiv.innerHTML = `<div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-tr-none rounded-2xl">${content}</div>`;
-      }
-      chatArea.appendChild(msgDiv);
-      chatArea.scrollTop = chatArea.scrollHeight;
-    }
+// Generate floating particles
+for (let i=0; i<50; i++){
+  const particle = document.createElement('div');
+  particle.className = 'particle';
+  particle.style.left = Math.random()*100+'%';
+  particle.style.animationDuration = (Math.random()*10+10)+'s';
+  particle.style.animationDelay = Math.random()*20+'s';
+  particlesContainer.appendChild(particle);
+}
 
-    async function sendMessage(message){
-      if(!message) return;
-      addMessage(message,'user');
-      userInput.value='';
+// Night mode toggle
+nightToggle.addEventListener('click', ()=>{
+  document.body.classList.toggle('night');
+  chatContainer.classList.toggle('night');
+  nightToggle.textContent = document.body.classList.contains('night') ? '☀️ Day Mode' : '🌙 Night Mode';
+});
 
-      awarenessLevel += Math.floor(Math.random()*10)+5;
-      if(awarenessLevel>100) awarenessLevel=100;
-      awarenessFill.style.width = awarenessLevel+'%';
+// Add message to chat
+function addMessage(content, type='user', isBot=false){
+  const msgDiv = document.createElement('div');
+  msgDiv.className='flex message';
+  if(isBot){
+    msgDiv.innerHTML = `
+      <div class="bot-avatar"><span class="text-white text-xl font-bold">CG</span></div>
+      <div class="bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-4 py-2 rounded-tl-none rounded-2xl relative">${content}</div>
+    `;
+  }else{
+    msgDiv.className+=' justify-end';
+    msgDiv.innerHTML = `<div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-tr-none rounded-2xl relative">${content}</div>`;
+  }
+  chatArea.appendChild(msgDiv);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
 
-      const typingDiv = document.createElement('div');
-      typingDiv.className='flex';
-      typingDiv.innerHTML=`<div class="bot-avatar"><span class="text-white text-xl font-bold">CG</span></div>
-        <div class="bg-gray-700 text-white px-4 py-2 rounded-tl-none rounded-2xl">
-        <span class="typing-dots"><span>•</span><span>•</span><span>•</span></span></div>`;
-      chatArea.appendChild(typingDiv);
-      chatArea.scrollTop = chatArea.scrollHeight;
+// Send message to backend
+function sendMessage(message){
+  if(!message) return;
+  addMessage('You: '+message,'user');
+  userInput.value='';
 
-      try{
-        const res = await fetch(BACKEND_URL,{
-          method:"POST",
-          headers:{"Content-Type":"application/json"},
-          body: JSON.stringify({message})
-        });
-        const data = await res.json();
-        typingDiv.remove();
-        addMessage(data.reply || "⚠️ No response from backend.",'bot',true);
-      }catch(err){
-        typingDiv.remove();
-        addMessage("⚠️ Could not reach backend.",'bot',true);
-        console.error(err);
-      }
-    }
+  awarenessLevel+=Math.floor(Math.random()*10)+5;
+  if(awarenessLevel>100) awarenessLevel=100;
+  awarenessFill.style.width=awarenessLevel+'%';
 
-    sendBtn.addEventListener('click', ()=>sendMessage(userInput.value.trim()));
-    userInput.addEventListener('keypress', e=>{if(e.key==='Enter') sendMessage(userInput.value.trim())});
-    document.querySelectorAll('.quick-reply-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>sendMessage(btn.getAttribute('data-reply')));
-    });
+  const typingDiv = document.createElement('div');
+  typingDiv.className='flex';
+  typingDiv.innerHTML=`
+    <div class="bot-avatar"><span class="text-white text-xl font-bold">CG</span></div>
+    <div class="bg-gray-700 text-white px-4 py-2 rounded-tl-none rounded-2xl"><span class="typing-dots"><span>•</span><span>•</span><span>•</span></span></div>
+  `;
+  chatArea.appendChild(typingDiv);
+  chatArea.scrollTop=chatArea.scrollHeight;
 
-    // Night mode toggle
-    toggleBtn.addEventListener('click', ()=>{
-      document.body.classList.toggle('light');
-      toggleBtn.textContent = document.body.classList.contains('light') ? 'Day Mode' : 'Night Mode';
-    });
-  </script>
+  fetch("http://127.0.0.1:5000/chat",{ // replace with Render URL when deployed
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({message})
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    typingDiv.remove();
+    addMessage(data.reply,'bot',true);
+  })
+  .catch(err=>{
+    typingDiv.remove();
+    addMessage("⚠️ Backend not reachable.",'bot',true);
+    console.error(err);
+  });
+}
+
+// Event listeners
+sendBtn.addEventListener('click',()=>sendMessage(userInput.value.trim()));
+userInput.addEventListener('keypress',(e)=>{ if(e.key==='Enter') sendMessage(userInput.value.trim()); });
+document.querySelectorAll('.quick-reply-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>sendMessage(btn.getAttribute('data-reply')));
+});
+</script>
 </body>
 </html>
+
