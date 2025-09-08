@@ -116,7 +116,6 @@
 </head>
 <body class="relative">
     <div class="cyber-bg"></div>
-    <!-- Floating particles -->
     <div id="particles" class="absolute inset-0 pointer-events-none"></div>
     
     <div class="flex flex-col items-center justify-center min-h-screen p-4 relative z-10">
@@ -143,8 +142,7 @@
                 </div>
             </div>
             <div id="chat-area" class="space-y-4 mb-6 max-h-80 overflow-y-auto">
-                <!-- Messages will be added here -->
-            </div>
+                </div>
             
             <div class="mb-4">
                 <h3 class="text-white text-lg mb-2 font-orbitron">Quick Topics:</h3>
@@ -173,26 +171,21 @@
     </div>
 
     <script>
+        // --- STEP 1: DEFINE YOUR BACKEND URL ---
+        // Use this URL for testing on your local computer.
+        // **IMPORTANT**: You MUST change this to your live deployed URL (from Render, Heroku, etc.) when your site goes live.
+        const BACKEND_URL = "http://127.0.0.1:5000/ask";
+
+        // --- (Your existing variables are all correct) ---
         const chatArea = document.getElementById('chat-area');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const awarenessFill = document.getElementById('awareness-fill');
         const particlesContainer = document.getElementById('particles');
-        
-        const responses = {
-            'password': 'Master your passwords! Create unique, long ones with a mix of characters. Use managers like LastPass or Bitwarden, and enable autofill securely.',
-            'phishing': 'Spot and stop phishing: Watch for fake domains, urgent requests, and suspicious links. Use browser extensions like uBlock Origin for safety.',
-            'safe browsing': 'Browse like a pro: Stick to HTTPS sites, avoid risky downloads, and use incognito mode for sensitive searches. Keep your browser updated.',
-            'social engineering': 'Beware social tricks: Attackers manipulate trust. Always verify identities through official channels and educate yourself on common tactics.',
-            'data privacy': 'Guard your data: Use encryption tools like VeraCrypt, audit your privacy settings monthly, and opt-out of unnecessary data sharing.',
-            'malware': 'Defend against malware: Employ comprehensive antivirus like Malwarebytes, avoid pirated software, and regularly scan for threats.',
-            'two-factor auth': 'Enhance security with 2FA: Opt for authenticator apps or hardware keys over SMS. Never share codes.',
-            'default': 'That\'s intriguing! For the best advice, try topics like passwords, phishing, malware, or data privacy. What else can I help with?'
-        };
 
         let awarenessLevel = 0;
         
-        // Generate floating particles
+        // --- (Particle generation code is correct) ---
         for (let i = 0; i < 50; i++) {
             const particle = document.createElement('div');
             particle.className = 'particle';
@@ -202,18 +195,20 @@
             particlesContainer.appendChild(particle);
         }
         
-        function sendMessage(message) {
+        // --- STEP 2: THIS FUNCTION IS NOW FIXED ---
+        // It is now an "async" function that calls your backend instead of using setTimeout.
+        async function sendMessage(message) {
             if (!message) return;
             
-            // Add user message to chat
+            // Add user message to chat (Your code, this is correct)
             addMessage('You: ' + message, 'user', false);
             
-            // Update awareness meter
+            // Update awareness meter (Your code, this is correct)
             awarenessLevel += Math.floor(Math.random() * 10) + 5;
             if (awarenessLevel > 100) awarenessLevel = 100;
             awarenessFill.style.width = awarenessLevel + '%';
             
-            // Add typing indicator
+            // Add typing indicator (Your code, this is correct)
             const typingDiv = document.createElement('div');
             typingDiv.className = 'flex typing-indicator';
             typingDiv.innerHTML = `
@@ -227,18 +222,44 @@
             chatArea.appendChild(typingDiv);
             chatArea.scrollTop = chatArea.scrollHeight;
             
-            // Simulate API call delay
-            setTimeout(() => {
-                // Remove typing indicator
-                const indicator = document.querySelector('.typing-indicator');
-                if(indicator) indicator.remove();
+            // --- This is the new logic that contacts your Python backend ---
+            try {
+                // Send the user's message to YOUR backend server
+                const response = await fetch("https://cyber-awareness-chatbot-4.onrender.com", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message // Your Flask code expects a JSON key named "message"
+                    })
+                });
 
-                // Get hardcoded response
-                const response = getResponse(message.toLowerCase());
-                addMessage('CyberGuard: ' + response, 'bot', true);
-            }, 1500);
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                // Get the REAL response from the server
+                const data = await response.json();
+                const aiReply = data.reply; // Your Flask code sends a JSON key named "reply"
+
+                // Remove the typing indicator
+                document.querySelector('.typing-indicator')?.remove();
+                
+                // Add the real AI response to the chat
+                addMessage('CyberGuard: ' + aiReply, 'bot', true);
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                // Always remove indicator, even on error
+                document.querySelector('.typing-indicator')?.remove();
+                
+                // Show a friendly error in the chat
+                addMessage('CyberGuard: Error connecting to the AI. Please make sure the backend server is running and try again.', 'bot', true);
+            }
         }
         
+        // --- (Your addMessage function is correct) ---
         function addMessage(content, type = 'user', isBot = false) {
             const msgDiv = document.createElement('div');
             msgDiv.className = 'flex message';
@@ -265,37 +286,38 @@
             chatArea.scrollTop = chatArea.scrollHeight;
         }
 
-        function getResponse(message) {
-            for (let key in responses) {
-                if (message.includes(key.replace(' ', ' '))) { // Handle spaces
-                    return responses[key];
-                }
-            }
-            return responses.default;
-        }
-        
+        // --- STEP 3: THE HARDCODED "responses" and "getResponse" FUNCTIONS HAVE BEEN DELETED ---
+
+        // --- (All your event listeners are correct) ---
         sendBtn.addEventListener('click', () => {
-            sendMessage(userInput.value.trim());
-            userInput.value = '';
-        });
-        
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage(userInput.value.trim());
+            const msg = userInput.value.trim();
+            if (msg) {
+                sendMessage(msg);
                 userInput.value = '';
             }
         });
         
-        // Quick reply buttons
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const msg = userInput.value.trim();
+                if (msg) {
+                    sendMessage(msg);
+                    userInput.value = '';
+                }
+            }
+        });
+        
+        // Quick reply buttons (This logic now works correctly with the new sendMessage)
         document.querySelectorAll('.quick-reply-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const topic = btn.getAttribute('data-reply');
-                userInput.value = topic;
-                sendMessage(topic);
+                userInput.value = topic; // Put topic in input (optional, but good UX)
+                sendMessage(topic); // Send the topic directly to the AI
+                userInput.value = ''; // Clear input after sending
             });
         });
         
-        // Initial suggestion
+        // Initial suggestion (Your code, this is correct)
         setTimeout(() => {
             addMessage('CyberGuard: Start with a common topic like "Passwords" or "Phishing" to get going!', 'bot', true);
         }, 4000);
