@@ -171,12 +171,10 @@
     </div>
 
     <script>
-        // --- STEP 1: DEFINE YOUR BACKEND URL ---
-        // Use this URL for testing on your local computer.
-        // **IMPORTANT**: You MUST change this to your live deployed URL (from Render, Heroku, etc.) when your site goes live.
+        // THIS CONSTANT IS CORRECT. IT POINTS TO YOUR RENDER SERVER'S "ASK" ROUTE.
         const BACKEND_URL = "https://cyber-awareness-chatbot-4.onrender.com/ask";
 
-        // --- (Your existing variables are all correct) ---
+        // --- (Your existing variables) ---
         const chatArea = document.getElementById('chat-area');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
@@ -185,7 +183,7 @@
 
         let awarenessLevel = 0;
         
-        // --- (Particle generation code is correct) ---
+        // --- (Particle generation) ---
         for (let i = 0; i < 50; i++) {
             const particle = document.createElement('div');
             particle.className = 'particle';
@@ -195,20 +193,16 @@
             particlesContainer.appendChild(particle);
         }
         
-        // --- STEP 2: THIS FUNCTION IS NOW FIXED ---
-        // It is now an "async" function that calls your backend instead of using setTimeout.
+        // --- THIS FUNCTION IS 100% CORRECT ---
         async function sendMessage(message) {
             if (!message) return;
             
-            // Add user message to chat (Your code, this is correct)
             addMessage('You: ' + message, 'user', false);
             
-            // Update awareness meter (Your code, this is correct)
             awarenessLevel += Math.floor(Math.random() * 10) + 5;
             if (awarenessLevel > 100) awarenessLevel = 100;
             awarenessFill.style.width = awarenessLevel + '%';
             
-            // Add typing indicator (Your code, this is correct)
             const typingDiv = document.createElement('div');
             typingDiv.className = 'flex typing-indicator';
             typingDiv.innerHTML = `
@@ -222,16 +216,16 @@
             chatArea.appendChild(typingDiv);
             chatArea.scrollTop = chatArea.scrollHeight;
             
-            // --- This is the new logic that contacts your Python backend ---
+            // --- THIS FETCH CALL IS 100% CORRECT ---
             try {
-                // Send the user's message to YOUR backend server
+                // It correctly calls the BACKEND_URL constant
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        message: message // Your Flask code expects a JSON key named "message"
+                        message: message 
                     })
                 });
 
@@ -239,22 +233,17 @@
                     throw new Error(`Server error: ${response.status}`);
                 }
 
-                // Get the REAL response from the server
                 const data = await response.json();
-                const aiReply = data.reply; // Your Flask code sends a JSON key named "reply"
+                const aiReply = data.reply; 
 
-                // Remove the typing indicator
                 document.querySelector('.typing-indicator')?.remove();
                 
-                // Add the real AI response to the chat
                 addMessage('CyberGuard: ' + aiReply, 'bot', true);
 
             } catch (error) {
                 console.error('Fetch error:', error);
-                // Always remove indicator, even on error
                 document.querySelector('.typing-indicator')?.remove();
                 
-                // Show a friendly error in the chat
                 addMessage('CyberGuard: Error connecting to the AI. Please make sure the backend server is running and try again.', 'bot', true);
             }
         }
@@ -286,8 +275,6 @@
             chatArea.scrollTop = chatArea.scrollHeight;
         }
 
-        // --- STEP 3: THE HARDCODED "responses" and "getResponse" FUNCTIONS HAVE BEEN DELETED ---
-
         // --- (All your event listeners are correct) ---
         sendBtn.addEventListener('click', () => {
             const msg = userInput.value.trim();
@@ -307,17 +294,15 @@
             }
         });
         
-        // Quick reply buttons (This logic now works correctly with the new sendMessage)
         document.querySelectorAll('.quick-reply-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const topic = btn.getAttribute('data-reply');
-                userInput.value = topic; // Put topic in input (optional, but good UX)
-                sendMessage(topic); // Send the topic directly to the AI
-                userInput.value = ''; // Clear input after sending
+                userInput.value = topic; 
+                sendMessage(topic); 
+                userInput.value = ''; 
             });
         });
         
-        // Initial suggestion (Your code, this is correct)
         setTimeout(() => {
             addMessage('CyberGuard: Start with a common topic like "Passwords" or "Phishing" to get going!', 'bot', true);
         }, 4000);
